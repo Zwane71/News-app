@@ -28,7 +28,7 @@ const ArticlesScreen: React.FC = () => {
 					"https://newsapi.org/v2/top-headlines?country=us&apiKey=cde39452fe2c458db85be6cf3e29d014"
 				);
 				const data = await response.json();
-				console.log(data); // Log the response for debugging
+
 				if (response.ok && data.articles && Array.isArray(data.articles)) {
 					setArticles(data.articles);
 				} else {

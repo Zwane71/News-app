@@ -9,7 +9,7 @@ export default function Index() {
 			<TouchableOpacity onPressIn={() => router.push("./Onboarding")}>
 				<Image source={require("@/assets/images/Group-13.png")} />
 			</TouchableOpacity>
-			<StatusBar backgroundColor={"black"} />
+			<StatusBar backgroundColor='dark' />
 		</SafeAreaView>
 	);
 }

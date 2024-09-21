@@ -1,84 +1,102 @@
-import React, { useState } from "react";
+// src/screens/NewsScreen.tsx
+import React, { useEffect, useState } from "react";
 import {
 	View,
-	TextInput,
-	FlatList,
 	Text,
+	FlatList,
 	TouchableOpacity,
+	Image,
+	Linking,
+	ActivityIndicator,
 } from "react-native";
-import axios from "axios";
 
-const Search = () => {
-	const [searchQuery, setSearchQuery] = useState("");
-	const [articles, setArticles] = useState([]);
-	const [loading, setLoading] = useState(false);
+const API_KEY = "4794b7dd4b0b4695bb60b1398e230b58"; // Your API key
 
-	const API_KEY = "cde39452fe2c458db85be6cf3e29d014"; // Use your RapidAPI key here
+const NewsScreen = () => {
+	const [sources, setSources] = useState<any[]>([]);
+	const [filteredSources, setFilteredSources] = useState<any[]>([]);
+	const [isFiltered, setIsFiltered] = useState(false);
+	const [isDropdownVisible, setDropdownVisible] = useState(false);
+	const [selectedOption, setSelectedOption] = useState("Sort/Filter Options");
+	const [refreshing, setRefreshing] = useState(false); // State for refresh
 
-	const handleSearch = async () => {
-		if (searchQuery) {
-			setLoading(true);
-			const options = {
-				method: "GET",
-				url: "https://real-time-news-data.p.rapidapi.com/search",
-				params: {
-					query: searchQuery,
-					limit: "10",
-					time_published: "anytime",
-					country: "US",
-					lang: "en",
-				},
-				headers: {
-					"x-rapidapi-key": API_KEY,
-					"x-rapidapi-host": "real-time-news-data.p.rapidapi.com",
-				},
-			};
+	useEffect(() => {
+		fetchSources();
+	}, []);
 
-			try {
-				const response = await axios.request(options);
-				setArticles(response.data.articles);
-			} catch (error) {
-				console.error(error);
-			} finally {
-				setLoading(false);
-				console.log("Loading complete");
-			}
+	const fetchSources = async () => {
+		setRefreshing(true);
+		try {
+			const response = await fetch(
+				`https://newsapi.org/v2/top-headlines/sources?apiKey=${API_KEY}`
+			);
+			const data = await response.json();
+			setSources(data.sources);
+			setFilteredSources(data.sources);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setRefreshing(false);
 		}
 	};
 
-	const renderArticle = ({ item }: { item: any }) => (
-		<View className='bg-white p-4 rounded-lg mb-4 shadow-lg'>
-			<Text className='text-lg font-bold mb-2'>{item.title}</Text>
-			<Text className='text-sm text-gray-600'>{item.description}</Text>
-		</View>
-	);
+	const filterSources = () => {
+		if (isFiltered) {
+			setFilteredSources(sources); // Reset to all sources
+		} else {
+			setFilteredSources(
+				sources.filter((source) => source.category === "news")
+			);
+		}
+		setIsFiltered(!isFiltered);
+		setDropdownVisible(false);
+	};
+
+	const sortSources = (criteria: string) => {
+		const sorted = [...filteredSources].sort((a, b) => {
+			if (criteria === "name") {
+				return a.name.localeCompare(b.name);
+			} else {
+				return a.id.localeCompare(b.id); // Example: Sort by ID
+			}
+		});
+		setFilteredSources(sorted);
+		setSelectedOption(`Sorted by ${criteria}`);
+		setDropdownVisible(false);
+	};
 
 	return (
-		<View className='flex-1 bg-gray-100 p-4'>
-			<TextInput
-				className='h-10 border border-gray-300 rounded-lg mb-4 px-3 bg-white'
-				placeholder='Search for articles'
-				value={searchQuery}
-				onChangeText={(text) => setSearchQuery(text)}
+		<View className='p-4'>
+			<View className=' flex items-center justify-center m-auto text-center  mt-4'>
+				<Text className=' font-black'>Explore World wide news</Text>
+			</View>
+			<FlatList
+				data={filteredSources}
+				keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique key
+				renderItem={({ item }) => (
+					<TouchableOpacity
+						className='p-4 border-b border-gray-300'
+						onPress={() => {
+							if (item.url) {
+								Linking.openURL(item.url);
+							}
+						}}>
+						{item.urlToImage && (
+							<Image
+								source={{ uri: item.urlToImage }}
+								className='w-full h-48 rounded-lg'
+							/>
+						)}
+						<Text className='font-bold text-lg mt-2'>{item.name}</Text>
+						<Text className='mt-1 text-gray-600'>{item.description}</Text>
+						<Text className='text-blue-500 mt-2'>Read more</Text>
+					</TouchableOpacity>
+				)}
+				refreshing={refreshing} // Add refreshing state
+				onRefresh={fetchSources} // Fetch data when pulled down
 			/>
-			<TouchableOpacity
-				className='bg-blue-500 p-3 rounded-lg mb-4'
-				onPress={handleSearch}>
-				<Text className='text-white text-center text-base font-bold'>
-					Search
-				</Text>
-			</TouchableOpacity>
-			{loading ? (
-				<Text className='text-center text-lg'>Loading...</Text>
-			) : (
-				<FlatList
-					data={articles}
-					keyExtractor={(item) => item.url}
-					renderItem={renderArticle}
-				/>
-			)}
 		</View>
 	);
 };
 
-export default Search;
+export default NewsScreen;
