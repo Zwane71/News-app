@@ -21,7 +21,7 @@ export default function TabsLayout() {
 				name='profile'
 				options={{ headerShown: false, title: "Profile" }}
 			/>
-			<StatusBar backgroundColor={"black"} />
+			{/* <StatusBar backgroundColor={"black"} /> */}
 		</Tabs>
 	);
 }
