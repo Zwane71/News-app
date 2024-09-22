@@ -20,7 +20,7 @@ export default function Index() {
 								updates and global developments—right at your fingertips!
 							</Text>
 							<TouchableOpacity
-								onPress={() => router.push("/home")}
+								onPress={() => router.push("/login")}
 								className='mt-10 justify-center space-x-4 items-center w-44 bg-[#0B1A33] p-3 mx-auto rounded-full flex flex-row'>
 								<Text className='font-semibold text-2xl text-white'>
 									Explore
